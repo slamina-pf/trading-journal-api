@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "trading-journal-api"
+version = "0.1.0"
+description = "Trading Journal REST API"
+authors = []
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.13"
+flask = "3.1.0"
+flask-sqlalchemy = "3.1.1"
+flask-migrate = "4.1.0"
+pymysql = "1.1.1"
+cryptography = "44.0.2"
+python-dotenv = "1.1.0"
+marshmallow = "3.26.1"
+flask-jwt-extended = "^4.7.1"
+pydantic = {version = "^2.11.0", extras = ["email"]}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-flask = "^1.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
