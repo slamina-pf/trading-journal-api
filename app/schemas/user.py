@@ -6,6 +6,14 @@ class RegisterSchema(BaseModel):
     username: str
     email: EmailStr
     password: str
+    bio: Optional[str] = None
+
+    @field_validator("bio")
+    @classmethod
+    def bio_max_length(cls, v: Optional[str]) -> Optional[str]:
+        if v and len(v) > 160:
+            raise ValueError("bio cannot exceed 160 characters")
+        return v
 
     @field_validator("username")
     @classmethod

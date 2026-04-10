@@ -1,3 +1,4 @@
+import cloudinary.uploader
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -39,11 +40,13 @@ def register():
         username=body.username,
         email=body.email,
         password_hash=generate_password_hash(body.password),
+        bio=body.bio,
     )
     db.session.add(user)
     db.session.commit()
 
-    return jsonify(user.to_dict()), 201
+    token = create_access_token(identity=str(user.id))
+    return jsonify({"access_token": token, "user": user.to_dict()}), 201
 
 
 # ── Login ─────────────────────────────────────────────────────────────────────
@@ -106,3 +109,32 @@ def edit_account():
     db.session.commit()
 
     return jsonify(user.to_dict()), 200
+
+
+# ── Upload avatar ──────────────────────────────────────────────────────────────
+
+@login_bp.post("/account/avatar")
+@jwt_required()
+def upload_avatar():
+    user_id = int(get_jwt_identity())
+    user    = db.session.get(User, user_id)
+
+    if not user:
+        return jsonify({"error": "user not found"}), 404
+
+    file = request.files.get("avatar")
+    if not file:
+        return jsonify({"error": "no file provided"}), 400
+
+    result = cloudinary.uploader.upload(
+        file,
+        folder="trading_journal/avatars",
+        public_id=f"user_{user_id}",
+        overwrite=True,
+        resource_type="image",
+    )
+
+    user.avatar_url = result["secure_url"]
+    db.session.commit()
+
+    return jsonify({"avatar_url": user.avatar_url}), 200
