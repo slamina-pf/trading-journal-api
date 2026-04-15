@@ -30,10 +30,10 @@ def register():
     if err:
         return err
 
-    if User.query.filter_by(email=body.email).first():
+    if User.query.filter_by(email=body.email).filter(User.deleted_at == None).first():
         return jsonify({"error": "email already registered"}), 409
 
-    if User.query.filter_by(username=body.username).first():
+    if User.query.filter_by(username=body.username).filter(User.deleted_at == None).first():
         return jsonify({"error": "username already taken"}), 409
 
     user = User(
@@ -57,7 +57,7 @@ def login():
     if err:
         return err
 
-    user = User.query.filter_by(email=body.email).first()
+    user = User.query.filter_by(email=body.email).filter(User.deleted_at == None).first()
 
     if not user or not check_password_hash(user.password_hash, body.password):
         return jsonify({"error": "invalid credentials"}), 401
@@ -86,13 +86,13 @@ def edit_account():
         return err
 
     if body.username is not None:
-        existing = User.query.filter_by(username=body.username).first()
+        existing = User.query.filter_by(username=body.username).filter(User.deleted_at == None).first()
         if existing and existing.id != user_id:
             return jsonify({"error": "username already taken"}), 409
         user.username = body.username
 
     if body.email is not None:
-        existing = User.query.filter_by(email=body.email).first()
+        existing = User.query.filter_by(email=body.email).filter(User.deleted_at == None).first()
         if existing and existing.id != user_id:
             return jsonify({"error": "email already registered"}), 409
         user.email = body.email

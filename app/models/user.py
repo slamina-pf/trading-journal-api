@@ -15,6 +15,7 @@ class User(db.Model):
     is_active     = db.Column(db.Boolean,     nullable=False, default=True)
     created_at    = db.Column(db.DateTime,    nullable=False, server_default=db.func.now())
     updated_at    = db.Column(db.DateTime,    nullable=False, server_default=db.func.now(), onupdate=db.func.now())
+    deleted_at    = db.Column(db.DateTime,    nullable=True,  default=None)
 
     def to_dict(self):
         return {
