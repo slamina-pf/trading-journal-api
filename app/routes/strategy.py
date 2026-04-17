@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from ..extensions import db
-from ..models.strategy import Strategy, StrategyStep, StrategyIndicator, StrategyVersion
+from ..models.strategy import Strategy, StrategyStep, StrategyIndicator, StrategyChecklist, StrategyVersion
 from ..schemas.strategy import CreateStrategySchema, UpdateStrategySchema
 from ..routes.login import _parse
 
@@ -80,6 +80,13 @@ def create_strategy():
             description=indicator.description,
         ))
 
+    for checklist in body.checklists:
+        db.session.add(StrategyChecklist(
+            strategy_id=strategy.id,
+            name=checklist.name,
+            description=checklist.description,
+        ))
+
     db.session.flush()
 
     db.session.add(StrategyVersion(
@@ -135,6 +142,16 @@ def update_strategy(strategy_id):
                 content=step.content,
             ))
 
+    if body.checklists is not None:
+        strategy.checklists.clear()
+        db.session.flush()
+        for checklist in body.checklists:
+            strategy.checklists.append(StrategyChecklist(
+                strategy_id=strategy_id,
+                name=checklist.name,
+                description=checklist.description,
+            ))
+
     db.session.flush()
 
     db.session.add(StrategyVersion(
@@ -168,6 +185,8 @@ def delete_strategy(strategy_id):
         step.deleted_at = now
     for indicator in strategy.indicators:
         indicator.deleted_at = now
+    for checklist in strategy.checklists:
+        checklist.deleted_at = now
 
     db.session.commit()
 

@@ -2,6 +2,29 @@ from pydantic import BaseModel, field_validator
 from typing import Optional
 
 
+class CreateChecklistSchema(BaseModel):
+    name:        str
+    description: str
+
+    @field_validator("name")
+    @classmethod
+    def name_valid(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("name cannot be empty")
+        if len(v) > 100:
+            raise ValueError("name cannot exceed 100 characters")
+        return v
+
+    @field_validator("description")
+    @classmethod
+    def description_not_empty(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("description cannot be empty")
+        return v
+
+
 class CreateIndicatorSchema(BaseModel):
     name:        str
     description: str
@@ -54,9 +77,10 @@ class StrategyStepSchema(BaseModel):
 
 
 class UpdateStrategySchema(BaseModel):
-    name:       Optional[str]                    = None
+    name:       Optional[str]                          = None
     steps:      Optional[list[StrategyStepSchema]]     = None
     indicators: Optional[list[CreateIndicatorSchema]]  = None
+    checklists: Optional[list[CreateChecklistSchema]]  = None
 
     @field_validator("name")
     @classmethod
@@ -87,6 +111,7 @@ class CreateStrategySchema(BaseModel):
     name:       str
     steps:      list[StrategyStepSchema]
     indicators: list[CreateIndicatorSchema] = []
+    checklists: list[CreateChecklistSchema] = []
 
     @field_validator("name")
     @classmethod
